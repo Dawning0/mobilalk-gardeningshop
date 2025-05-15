@@ -24,6 +24,8 @@
             android:exported="true"/>
         <activity android:name=".MainActivity"
             android:exported="true"/>
+        <activity android:name=".ui.CartActivity"
+            android:exported="true"/>
     </application>
 
 </manifest>
