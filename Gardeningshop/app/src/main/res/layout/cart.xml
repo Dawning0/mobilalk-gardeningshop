@@ -13,7 +13,6 @@
         android:title="My Gardening Shop"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
-    <!-- Empty Cart Message (Separate Layout) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -54,5 +53,17 @@
             android:gravity="center"
             android:background="@android:color/white"
             android:elevation="4dp"/>
+
+        <!-- Delivery Button -->
+        <Button
+            android:id="@+id/deliveryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Proceed to Delivery"
+            android:layout_marginStart="16dp"
+            android:padding="10dp"
+            android:backgroundTint="@color/white"
+            android:textColor="@android:color/black"/>
+
     </LinearLayout>
 </LinearLayout>
