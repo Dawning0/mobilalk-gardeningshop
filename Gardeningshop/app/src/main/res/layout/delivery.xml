@@ -54,7 +54,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Example: Input Fields for Delivery -->
         <EditText
             android:id="@+id/nameField"
             android:layout_width="match_parent"

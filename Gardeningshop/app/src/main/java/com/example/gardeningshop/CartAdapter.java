@@ -82,7 +82,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         }
     }
 
-    // Interface to notify CartActivity when items change
     public interface OnCartUpdatedListener {
         void onCartUpdated();
     }

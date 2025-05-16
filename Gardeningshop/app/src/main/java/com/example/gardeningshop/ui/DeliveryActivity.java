@@ -3,11 +3,13 @@ package com.example.gardeningshop.ui;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,11 +21,15 @@ import androidx.core.content.ContextCompat;
 import com.example.gardeningshop.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class DeliveryActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
+    private EditText addressField;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +45,7 @@ public class DeliveryActivity extends AppCompatActivity {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        addressField = findViewById(R.id.addressField); // Link UI component
 
         requestLocationPermission();
     }
@@ -52,26 +59,45 @@ public class DeliveryActivity extends AppCompatActivity {
     }
 
     private void fetchLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        } else {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(location -> {
                         if (location != null) {
-                            double latitude = location.getLatitude();
-                            double longitude = location.getLongitude();
-                            Log.d("DeliveryActivity", "Lat: " + latitude + ", Long: " + longitude);
-                            updateDeliveryAddress(latitude, longitude);
+                            getAddressFromCoordinates(location.getLatitude(), location.getLongitude());
                         } else {
-                            Toast.makeText(this, "Unable to get location. Make sure GPS is enabled!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Unable to get location. Please enter your address manually.", Toast.LENGTH_SHORT).show();
                         }
                     })
                     .addOnFailureListener(e -> Log.e("DeliveryActivity", "Error getting location: ", e));
         }
     }
 
-    private void updateDeliveryAddress(double latitude, double longitude) {
-        Toast.makeText(this, "Your Delivery Location: " + latitude + ", " + longitude, Toast.LENGTH_LONG).show();
+    private void getAddressFromCoordinates(double latitude, double longitude) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (!addresses.isEmpty()) {
+                addressField.setText(addresses.get(0).getAddressLine(0)); // Autofill address field
+            } else {
+                Toast.makeText(this, "No address found. Please enter manually.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (IOException e) {
+            Toast.makeText(this, "Error fetching address: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                fetchLocation();
+            } else {
+                Toast.makeText(this, "Location permission denied. Please enter your address manually.", Toast.LENGTH_SHORT).show();
+                addressField.setHint("Enter delivery address"); // Allow manual input
+            }
+        }
     }
 
     @Override
@@ -91,17 +117,5 @@ public class DeliveryActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                fetchLocation();
-            } else {
-                Toast.makeText(this, "Location permission denied. Delivery address cannot be determined.", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 }
