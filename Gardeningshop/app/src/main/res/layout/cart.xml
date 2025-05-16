@@ -1,48 +1,72 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
-    <!-- Toolbar at the top -->
+    <!-- Lottie Animation Background -->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/menuBackgroundAnimation"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:lottie_rawRes="@raw/menu"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Toolbar (Placed Above Lottie Animation) -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        android:title="My Gardening Shop"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        android:background="#80FFC0CB"
+        android:title="Gardening Shop"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="6dp"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- Empty Cart Message -->
+    <TextView
+        android:id="@+id/emptyCartMessage"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp">
+        android:text="Your cart is empty"
+        android:textSize="18sp"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:padding="16dp"/>
 
-        <TextView
-            android:id="@+id/emptyCartMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Your cart is empty"
-            android:textSize="18sp"
-            android:textColor="@android:color/darker_gray"
-            android:visibility="gone"/>
-    </LinearLayout>
-
-    <!-- RecyclerView (Takes Up Most Space) -->
+    <!-- RecyclerView (Cart List) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/cartRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        app:layout_constraintTop_toBottomOf="@id/emptyCartMessage"
+        app:layout_constraintBottom_toTopOf="@id/totalContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Total Price Section (Separate Layout) -->
+    <!-- Total Price & Delivery Section -->
     <LinearLayout
+        android:id="@+id/totalContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
+        <!-- Total Price -->
         <TextView
             android:id="@+id/totalPriceText"
             android:layout_width="wrap_content"
@@ -52,7 +76,8 @@
             android:textStyle="bold"
             android:gravity="center"
             android:background="@android:color/white"
-            android:elevation="4dp"/>
+            android:elevation="4dp"
+            android:padding="10dp"/>
 
         <!-- Delivery Button -->
         <Button
@@ -64,6 +89,6 @@
             android:padding="10dp"
             android:backgroundTint="@color/white"
             android:textColor="@android:color/black"/>
-
     </LinearLayout>
-</LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
