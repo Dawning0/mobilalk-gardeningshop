@@ -33,6 +33,8 @@
             android:exported="true"/>
         <activity android:name=".ui.OrdersActivity"
             android:exported="true"/>
+        <activity android:name=".ui.OrderDetailsActivity"
+            android:exported="true"/>
     </application>
 
 </manifest>

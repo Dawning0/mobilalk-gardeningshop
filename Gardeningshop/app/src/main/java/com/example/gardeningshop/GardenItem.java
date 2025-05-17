@@ -1,6 +1,8 @@
 package com.example.gardeningshop;
 
-public class GardenItem {
+import java.io.Serializable;
+
+public class GardenItem implements Serializable {
     private String name;
     private String price;
     private int imageResId;
