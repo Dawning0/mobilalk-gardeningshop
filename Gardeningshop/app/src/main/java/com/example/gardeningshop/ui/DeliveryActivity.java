@@ -1,9 +1,11 @@
 package com.example.gardeningshop.ui;
 
 import android.Manifest;
+import android.app.AlarmManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -26,6 +28,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.gardeningshop.MainActivity;
+import com.example.gardeningshop.OrderReminderReceiver;
 import com.example.gardeningshop.R;
 import com.example.gardeningshop.CartManager;
 import com.example.gardeningshop.GardenItem;
@@ -148,15 +151,14 @@ public class DeliveryActivity extends AppCompatActivity {
 
                     CartManager.getInstance().clearCart();
                     showOrderNotification();
+                    scheduleOrderReminder();
 
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
 
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error saving order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(this, "Error saving order: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void showOrderNotification() {
@@ -205,6 +207,24 @@ public class DeliveryActivity extends AppCompatActivity {
             manager.createNotificationChannel(channel);
         }
     }
+
+    private void scheduleOrderReminder() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+        }
+
+        Intent intent = new Intent(this, OrderReminderReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        long triggerTime = System.currentTimeMillis() + (20 * 1000);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+    }
+
 
 
     @Override
