@@ -1,10 +1,14 @@
 package com.example.gardeningshop.ui;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.gardeningshop.MainActivity;
@@ -66,6 +72,7 @@ public class DeliveryActivity extends AppCompatActivity {
         confirmDeliveryButton.setOnClickListener(v -> saveCartToFirebase());
 
         requestLocationPermission();
+        createNotificationChannel();
     }
 
     private void requestLocationPermission() {
@@ -140,6 +147,7 @@ public class DeliveryActivity extends AppCompatActivity {
                     Toast.makeText(this, "Order confirmed!", Toast.LENGTH_SHORT).show();
 
                     CartManager.getInstance().clearCart();
+                    showOrderNotification();
 
                     Intent intent = new Intent(this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -150,6 +158,27 @@ public class DeliveryActivity extends AppCompatActivity {
                     Toast.makeText(this, "Error saving order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void showOrderNotification() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+            return;
+        }
+
+        Intent ordersIntent = new Intent(this, OrdersActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, ordersIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "order_notifications")
+                .setSmallIcon(R.drawable.icon)
+                .setContentTitle("Order Confirmed!")
+                .setContentText("Your order has been placed successfully.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .addAction(R.drawable.icon, "View Orders", pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(1, builder.build());
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -164,6 +193,19 @@ public class DeliveryActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "order_notifications",
+                    "Order Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
