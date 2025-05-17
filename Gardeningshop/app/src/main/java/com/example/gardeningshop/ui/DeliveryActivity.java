@@ -168,6 +168,9 @@ public class DeliveryActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_cart) {
             startActivity(new Intent(this, CartActivity.class));
             return true;
+        } else if (item.getItemId() == R.id.action_orders) {
+            startActivity(new Intent(this, OrdersActivity.class));
+            return true;
         } else if (item.getItemId() == R.id.action_logout) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();

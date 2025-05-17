@@ -12,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.gardeningshop.ui.CartActivity;
 import com.example.gardeningshop.ui.LoginActivity;
+import com.example.gardeningshop.ui.OrdersActivity;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -106,11 +107,15 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_logout) {
-            logoutUser();
-            return true;
-        } else if (item.getItemId() == R.id.action_cart) {
+        if (item.getItemId() == R.id.action_cart) {
             startActivity(new Intent(this, CartActivity.class));
+            return true;
+        } else if (item.getItemId() == R.id.action_orders) {
+            startActivity(new Intent(this, OrdersActivity.class));
+            return true;
+        } else if (item.getItemId() == R.id.action_logout) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
             return true;
         }
         return super.onOptionsItemSelected(item);

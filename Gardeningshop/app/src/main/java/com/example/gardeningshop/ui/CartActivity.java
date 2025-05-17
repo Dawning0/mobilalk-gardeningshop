@@ -96,8 +96,11 @@ public class CartActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_logout) {
             logoutUser();
             return true;
+        } else if (item.getItemId() == R.id.action_orders) {
+            startActivity(new Intent(this, OrdersActivity.class));
+            return true;
         }
-        return super.onOptionsItemSelected(item);
+            return super.onOptionsItemSelected(item);
     }
 
     private void logoutUser() {
