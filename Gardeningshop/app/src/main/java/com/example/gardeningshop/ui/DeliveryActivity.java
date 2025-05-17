@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -19,17 +20,27 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.gardeningshop.R;
+import com.example.gardeningshop.CartManager;
+import com.example.gardeningshop.GardenItem;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class DeliveryActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationClient;
+    private FirebaseAuth auth;
+    private FirebaseFirestore db;
     private EditText addressField;
+    private Button confirmDeliveryButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +56,13 @@ public class DeliveryActivity extends AppCompatActivity {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        addressField = findViewById(R.id.addressField); // Link UI component
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        addressField = findViewById(R.id.addressField);
+        confirmDeliveryButton = findViewById(R.id.confirmDeliveryButton);
+
+        confirmDeliveryButton.setOnClickListener(v -> saveCartToFirebase());
 
         requestLocationPermission();
     }
@@ -86,6 +103,46 @@ public class DeliveryActivity extends AppCompatActivity {
         }
     }
 
+    private void saveCartToFirebase() {
+        String userEmail = auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : "unknown";
+        String deliveryAddress = addressField.getText().toString().trim();
+        List<GardenItem> cartItems = CartManager.getInstance().getItems();
+
+        if (cartItems.isEmpty()) {
+            Toast.makeText(this, "Your cart is empty!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (deliveryAddress.isEmpty()) {
+            Toast.makeText(this, "Please enter a valid delivery address.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        List<Map<String, Object>> cartData = new ArrayList<>();
+        for (GardenItem item : cartItems) {
+            Map<String, Object> itemMap = new HashMap<>();
+            itemMap.put("name", item.getName());
+            itemMap.put("price", item.getPrice());
+            itemMap.put("quantity", item.getQuantity());
+            cartData.add(itemMap);
+        }
+
+        Map<String, Object> orderData = new HashMap<>();
+        orderData.put("email", userEmail);
+        orderData.put("deliveryAddress", deliveryAddress);
+        orderData.put("cartItems", cartData);
+        orderData.put("timestamp", System.currentTimeMillis());
+
+        db.collection("orders").document(userEmail + "_" + System.currentTimeMillis())
+                .set(orderData)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Order confirmed!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error saving order: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -95,7 +152,7 @@ public class DeliveryActivity extends AppCompatActivity {
                 fetchLocation();
             } else {
                 Toast.makeText(this, "Location permission denied. Please enter your address manually.", Toast.LENGTH_SHORT).show();
-                addressField.setHint("Enter delivery address"); // Allow manual input
+                addressField.setHint("Enter delivery address");
             }
         }
     }
