@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.gardeningshop.MainActivity;
 import com.example.gardeningshop.R;
 import com.example.gardeningshop.CartManager;
 import com.example.gardeningshop.GardenItem;
@@ -137,6 +138,13 @@ public class DeliveryActivity extends AppCompatActivity {
                 .set(orderData)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Order confirmed!", Toast.LENGTH_SHORT).show();
+
+                    CartManager.getInstance().clearCart();
+
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error saving order: " + e.getMessage(), Toast.LENGTH_SHORT).show();

@@ -29,6 +29,10 @@ public class CartManager {
         cartItems.add(item);
     }
 
+    public void clearCart() {
+        cartItems.clear();
+    }
+
     public List<GardenItem> getItems() {
         return new ArrayList<>(cartItems);
     }
